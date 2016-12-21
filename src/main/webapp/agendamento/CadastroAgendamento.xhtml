@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html>
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/WEB-INF/templates/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core">
+                    
+    <f:metadata>
+        <f:viewParam name="agendamento" value="#{agendamentoBean.agendamento}"/>
+    </f:metadata>
+
+    <ui:define id="uiTituloAgendamento" name="titulo">#{agendamentoBean.editando ? msg.editCadastreSchedule : msg.newRegisterSchedule} | #{msg.systemName}</ui:define>
+
+    <ui:define name="conteudo">
+        <h:form id="formCadastroAgendamento">
+            <p:growl id="mensagens" autoUpdate="true" class="sobreporMensagens"/>
+            <p:schedule widgetVar="scheduleAgendamento" id="schedule" value="#{agendamentoBean.scheduleModel}" locale="pt" 
+                        axisFormat="HH:mm" timeFormat="dd/MM hh:mm" timeZone="GMT-3">
+                <p:ajax event="dateSelect" update="agendamentoDetalhe" listener="#{agendamentoBean.quandoNovo}" 
+                        oncomplete="PF('agendamentoDialog').show();"/>
+                
+                <p:ajax event="eventSelect" update="agendamentoDetalhe" listener="#{agendamentoBean.quandoSelecionado}" 
+                        oncomplete="PF('agendamentoDialog').show();"/>
+
+            </p:schedule>
+
+            <p:dialog widgetVar="agendamentoDialog" resizable="false" modal="true" showEffect="clip">
+                <p:outputPanel id="agendamentoDetalhe">
+                    <h:panelGrid id="panelGridAgendamentos" columns="2">
+                        <p:outputLabel for="selectPaciente" value="#{msg.patient}: " />
+                        <p:selectOneMenu id="selectPaciente" value="#{agendamentoBean.agendamento.paciente}"  
+                                         required="true" filter="true" filterMatchMode="contains">
+                            <f:selectItem itemLabel="#{msg.selectIt}..." noSelectionOption="true"/>
+                            <f:selectItems value="#{pacienteBean.pacientes}" var="paciente" itemValue="#{paciente}" itemLabel="#{paciente.nome}"/>
+                        </p:selectOneMenu>
+                        
+                        <p:outputLabel for="dataAgendamentoInicio" value="Data Início: " />
+                        <p:calendar id="dataAgendamentoInicio" value="#{agendamentoBean.agendamento.dataHoraInicio}" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                    yearRange="c-150:c+0" size="15" locale="pt" mask="true" readonlyInput="true">
+                            <f:convertDateTime type="date" locale="pt" pattern="dd/MM/yyyy HH:mm" timeZone="GMT-3"/>
+                        </p:calendar>
+                        
+                        <p:outputLabel for="dataAgendamentoFim" value="Data Fim: " />
+                        <p:calendar id="dataAgendamentoFim" value="#{agendamentoBean.agendamento.dataHoraFim}" navigator="true" pattern="dd/MM/yyyy HH:mm"
+                                    yearRange="c-150:c+0" size="15" locale="pt" mask="true" readonlyInput="true">
+                            <f:convertDateTime type="date" locale="pt" pattern="dd/MM/yyyy HH:mm" timeZone="GMT-3"/>
+                        </p:calendar>
+                        
+                        <p:outputLabel for="observacoes" value="#{msg.observations}: " />
+                        <p:inputTextarea id="observacoes" value="#{agendamentoBean.agendamento.observacoes}" class="upper" autoResize="false">
+                            <f:ajax event="blur" render="@this"/>
+                        </p:inputTextarea>
+                        
+                        <p:outputLabel value="Status: " for="status"/>
+                        <p:selectOneRadio id="status" value="#{agendamentoBean.agendamento.status}" label="Status">
+                            <f:selectItems value="#{agendamentoBean.status}" var="status" itemValue="#{status}" 
+                                           itemLabel="#{status.descricao}"/>
+                        </p:selectOneRadio>
+
+                    </h:panelGrid>
+                    <p:commandButton id="botaoSalvar" value="#{msg.save}" actionListener="#{agendamentoBean.salvar}" 
+                                     update="@form" icon="ui-icon ui-icon-disk">
+                    </p:commandButton>
+
+                    <p:blockUI id="blockUIAgendamento" block="formCadastroAgendamento" trigger="botaoSalvar"/>
+                </p:outputPanel>
+            </p:dialog>
+        </h:form>
+    </ui:define>
+    
+</ui:composition>
